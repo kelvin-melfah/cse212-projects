@@ -13,7 +13,11 @@ public class PersonQueue
     /// <param name="person">The person to add</param>
     public void Enqueue(Person person)
     {
-        _queue.Insert(0, person);
+        // Dequeue takes from index 0, so new people have to go on the other
+        // end. Inserting at index 0 meant the newest person was always served
+        // first, which is a stack. Adding to the end keeps the person who has
+        // waited longest at the front, which is what FIFO needs.
+        _queue.Add(person);
     }
 
     public Person Dequeue()

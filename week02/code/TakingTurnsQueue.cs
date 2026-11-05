@@ -37,17 +37,25 @@ public class TakingTurnsQueue
         {
             throw new InvalidOperationException("No one in the queue.");
         }
-        else
-        {
-            Person person = _people.Dequeue();
-            if (person.Turns > 1)
-            {
-                person.Turns -= 1;
-                _people.Enqueue(person);
-            }
 
-            return person;
+        Person person = _people.Dequeue();
+
+        // Zero or negative turns means "forever", so this person always goes
+        // back in line. I deliberately leave their Turns alone here, because
+        // the tests check that infinite people aren't swapped for a big number.
+        if (person.Turns <= 0)
+        {
+            _people.Enqueue(person);
         }
+        // For everyone else, they only rejoin if they'd still have a turn left
+        // after this one, which is why we compare against 1 and not 0.
+        else if (person.Turns > 1)
+        {
+            person.Turns -= 1;
+            _people.Enqueue(person);
+        }
+
+        return person;
     }
 
     public override string ToString()
