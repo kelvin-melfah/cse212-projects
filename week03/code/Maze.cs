@@ -32,7 +32,17 @@ public class Maze
     /// </summary>
     public void MoveLeft()
     {
-        // FILL IN CODE
+        // The dictionary is keyed by our current (x, y), so I look up the square
+        // we're standing on. The bool array is [left, right, up, down], which makes
+        // left index 0. If the square isn't in the map at all, I treat that like a
+        // wall rather than letting a KeyNotFoundException leak out.
+        if (!_mazeMap.TryGetValue((_currX, _currY), out var directions) || !directions[0])
+        {
+            throw new InvalidOperationException("Can't go that way!");
+        }
+
+        // Only reached when the way is open. Moving left means x shrinks by one.
+        _currX--;
     }
 
     /// <summary>
@@ -41,7 +51,14 @@ public class Maze
     /// </summary>
     public void MoveRight()
     {
-        // FILL IN CODE
+        // Same lookup as MoveLeft, but right lives at index 1 of the array.
+        if (!_mazeMap.TryGetValue((_currX, _currY), out var directions) || !directions[1])
+        {
+            throw new InvalidOperationException("Can't go that way!");
+        }
+
+        // Moving right means x grows by one.
+        _currX++;
     }
 
     /// <summary>
@@ -50,7 +67,15 @@ public class Maze
     /// </summary>
     public void MoveUp()
     {
-        // FILL IN CODE
+        // Up is index 2 in the array.
+        if (!_mazeMap.TryGetValue((_currX, _currY), out var directions) || !directions[2])
+        {
+            throw new InvalidOperationException("Can't go that way!");
+        }
+
+        // This one is easy to get backwards. In the maze picture, y=1 is the TOP
+        // row, so going up means heading toward row 1, and y gets smaller.
+        _currY--;
     }
 
     /// <summary>
@@ -59,7 +84,14 @@ public class Maze
     /// </summary>
     public void MoveDown()
     {
-        // FILL IN CODE
+        // Down is index 3, the last slot in the array.
+        if (!_mazeMap.TryGetValue((_currX, _currY), out var directions) || !directions[3])
+        {
+            throw new InvalidOperationException("Can't go that way!");
+        }
+
+        // Mirror image of MoveUp: down heads toward row 6, so y gets bigger.
+        _currY++;
     }
 
     public string GetStatus()
