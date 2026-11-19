@@ -32,7 +32,25 @@ public class LinkedList : IEnumerable<int>
     /// </summary>
     public void InsertTail(int value)
     {
-        // TODO Problem 1
+        Node newNode = new(value);
+
+        // An empty list is the easy case: the new node is both the first and last
+        // thing in the list, so head and tail should both point at it.
+        if (_tail is null)
+        {
+            _head = newNode;
+            _tail = newNode;
+        }
+        else
+        {
+            // This is just InsertHead flipped around. The old tail needs to know
+            // about its new neighbor, and the new node needs to know who's behind it.
+            // Linking both directions matters, because Reverse and RemoveTail rely
+            // on the Prev pointers being correct.
+            newNode.Prev = _tail;
+            _tail.Next = newNode;
+            _tail = newNode;
+        }
     }
 
 
@@ -64,7 +82,22 @@ public class LinkedList : IEnumerable<int>
     /// </summary>
     public void RemoveTail()
     {
-        // TODO Problem 2
+        // Same trick RemoveHead uses: if head and tail are the same node, there is
+        // either one item or none. Nulling both out handles both cases, and setting
+        // null on an already empty list is harmless.
+        if (_head == _tail)
+        {
+            _head = null;
+            _tail = null;
+        }
+        else if (_tail is not null)
+        {
+            // With two or more nodes, the second-to-last node becomes the new tail.
+            // Cutting its Next pointer is what actually drops the old tail from the
+            // list, so we don't leave a dangling reference to a node that's gone.
+            _tail.Prev!.Next = null;
+            _tail = _tail.Prev;
+        }
     }
 
     /// <summary>
@@ -108,7 +141,37 @@ public class LinkedList : IEnumerable<int>
     /// </summary>
     public void Remove(int value)
     {
-        // TODO Problem 3
+        Node? curr = _head;
+        while (curr is not null)
+        {
+            if (curr.Data == value)
+            {
+                // The ends of the list are special because head/tail have to be
+                // updated too, and RemoveHead/RemoveTail already do that correctly.
+                // Reusing them means I don't have to re-solve those edge cases here.
+                if (curr == _head)
+                {
+                    RemoveHead();
+                }
+                else if (curr == _tail)
+                {
+                    RemoveTail();
+                }
+                else
+                {
+                    // A node in the middle always has neighbors on both sides, so we
+                    // just make them point at each other and skip over this one.
+                    curr.Prev!.Next = curr.Next;
+                    curr.Next!.Prev = curr.Prev;
+                }
+
+                // The instructions say to remove only the first match, so we stop
+                // searching as soon as we've deleted something.
+                return;
+            }
+
+            curr = curr.Next;
+        }
     }
 
     /// <summary>
@@ -116,7 +179,19 @@ public class LinkedList : IEnumerable<int>
     /// </summary>
     public void Replace(int oldValue, int newValue)
     {
-        // TODO Problem 4
+        Node? curr = _head;
+        while (curr is not null)
+        {
+            // Unlike Remove, there's no early return here. We want every match, so
+            // we keep walking all the way to the end. Only the Data changes, not the
+            // links, so there's no pointer work to worry about.
+            if (curr.Data == oldValue)
+            {
+                curr.Data = newValue;
+            }
+
+            curr = curr.Next;
+        }
     }
 
     /// <summary>
@@ -146,8 +221,15 @@ public class LinkedList : IEnumerable<int>
     /// </summary>
     public IEnumerable Reverse()
     {
-        // TODO Problem 5
-        yield return 0; // replace this line with the correct yield return statement(s)
+        // This mirrors GetEnumerator, except we begin at the tail and follow Prev
+        // instead of Next. For an empty list, _tail is null so the loop never runs
+        // and the foreach just gets nothing, which is exactly what the test expects.
+        var curr = _tail;
+        while (curr is not null)
+        {
+            yield return curr.Data;
+            curr = curr.Prev;
+        }
     }
 
     public override string ToString()
